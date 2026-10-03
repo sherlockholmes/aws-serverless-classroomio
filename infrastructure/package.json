@@ -5,6 +5,7 @@
   "main": "dist/bin/app.js",
   "scripts": {
     "build": "tsc",
+    "test": "vitest run",
     "watch": "tsc -w",
     "cdk": "cdk",
     "synth": "cdk synth --context env=dev",
@@ -49,6 +50,7 @@
   "devDependencies": {
     "@types/node": "^26.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^1.2.2"
   }
 }

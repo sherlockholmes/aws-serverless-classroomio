@@ -54,31 +54,44 @@ const cicdStack = new CicdStack(app, `${stackPrefix}-CICD`, config, {
 });
 
 /**
- * Certificate Stack (us-east-1)
- * Deploy first as CloudFront distributions require certificates in us-east-1
- * This stack MUST be in us-east-1 even if other stacks are in different regions
+ * Certificate Stack (us-east-1) — OPTIONAL
  *
- * Task 18.1: Create ACM certificate for CloudFront
+ * CloudFront requires its certificate in us-east-1. We only create this stack
+ * when a custom CDN domain is configured AND no pre-issued us-east-1
+ * certificate (CLOUDFRONT_CERTIFICATE_ARN) was supplied. In every other case
+ * (no custom CDN domain, or a cert ARN already provided) this stack is not
+ * created and CloudFront falls back to its default *.cloudfront.net URL.
  */
-const certificateStack = new CertificateStack(app, `${stackPrefix}-Certificate`, config, {
-  // Note: env is set inside CertificateStack to force us-east-1
-  description: `ClassroomIO Certificate Stack (us-east-1) - ACM certificate for CloudFront`,
-  crossRegionReferences: true
-});
+const needsCertificateStack = Boolean(config.domain.cdnDomain) && !config.domain.cloudFrontCertificateArn;
+
+const certificateStack = needsCertificateStack
+  ? new CertificateStack(app, `${stackPrefix}-Certificate`, config, {
+      // Note: env is set inside CertificateStack to force us-east-1
+      description: `ClassroomIO Certificate Stack (us-east-1) - ACM certificate for CloudFront`,
+      crossRegionReferences: true
+    })
+  : undefined;
+
+// Resolve the us-east-1 CloudFront certificate ARN, preferring an explicitly
+// supplied one, otherwise the ARN produced by the (optional) CertificateStack.
+const cloudFrontCertificateArn = config.domain.cloudFrontCertificateArn ?? certificateStack?.certificate.certificateArn;
 
 /**
  * Storage Stack
- * Deploy after certificate stack as CloudFront distribution needs the certificate
+ * When a CDN certificate is available it attaches the custom domain to the
+ * CloudFront distribution; otherwise the distribution uses its default URL.
  */
 const storageStack = new StorageStack(app, `${stackPrefix}-Storage`, config, {
   env,
   description: `ClassroomIO Storage Stack (${config.environmentName}) - S3 bucket, CloudFront distribution`,
   crossRegionReferences: true,
-  certificateArn: certificateStack.certificate.certificateArn
+  certificateArn: cloudFrontCertificateArn
 });
 
-// Storage stack depends on certificate stack
-storageStack.addStackDependency(certificateStack);
+// Storage stack depends on the certificate stack only when it actually exists
+if (certificateStack) {
+  storageStack.addStackDependency(certificateStack);
+}
 
 /**
  * Queue Stack

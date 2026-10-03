@@ -108,19 +108,102 @@ export interface MonitoringConfig {
 }
 
 /**
+ * Derive the apex (root) zone name from a fully-qualified domain, e.g.
+ * `cdn.app.example.org` -> `example.org`. Used to look up the Route 53 hosted
+ * zone and to scope certificates/SES identities when a custom domain is set.
+ */
+export function getRootZoneName(domain: string): string {
+  return domain.split('.').slice(-2).join('.');
+}
+
+/**
+ * Build the optional domain configuration from environment variables.
+ *
+ * Every field is optional. A deployment with none of these set uses the
+ * default API Gateway (execute-api) URL and the default CloudFront
+ * (*.cloudfront.net) URL — no custom domain, no certificate, no Route 53.
+ *
+ * All three environments (dev, staging, production) share this exact wiring
+ * so custom-domain behavior is identical regardless of environment.
+ */
+function buildDomainConfig(): DomainConfig {
+  return {
+    apiDomain: process.env.API_DOMAIN,
+    cdnDomain: process.env.CDN_DOMAIN,
+    hostedZoneId: process.env.HOSTED_ZONE_ID,
+    certificateArn: process.env.CERTIFICATE_ARN,
+    cloudFrontCertificateArn: process.env.CLOUDFRONT_CERTIFICATE_ARN
+  };
+}
+
+/**
+ * Validate the optional domain configuration and reject incomplete
+ * combinations with a clear, actionable error.
+ *
+ * Rules (a fully-unset domain config passes with no error):
+ * - A custom API domain requires a regional API Gateway certificate
+ *   (CERTIFICATE_ARN, same region as the API Gateway).
+ * - A custom CDN domain requires a us-east-1 CloudFront certificate
+ *   (CLOUDFRONT_CERTIFICATE_ARN) — unless the CertificateStack will create
+ *   one, which it can only do when a hosted zone is available.
+ * - Any custom domain needs a Route 53 hosted zone (HOSTED_ZONE_ID) so the
+ *   DNS alias records (and, for the CDN cert, DNS validation) can be created.
+ */
+export function validateDomainConfig(domain: DomainConfig, environmentName: string): void {
+  const errors: string[] = [];
+  const hasApiDomain = Boolean(domain.apiDomain);
+  const hasCdnDomain = Boolean(domain.cdnDomain);
+  const hasAnyCustomDomain = hasApiDomain || hasCdnDomain;
+
+  if (hasApiDomain && !domain.certificateArn) {
+    errors.push(
+      'API_DOMAIN is set but CERTIFICATE_ARN is missing. A custom API domain needs a regional ACM certificate (same region as the API Gateway).'
+    );
+  }
+
+  if (hasCdnDomain && !domain.cloudFrontCertificateArn && !domain.hostedZoneId) {
+    errors.push(
+      'CDN_DOMAIN is set but neither CLOUDFRONT_CERTIFICATE_ARN nor HOSTED_ZONE_ID is provided. CloudFront needs a us-east-1 certificate: supply CLOUDFRONT_CERTIFICATE_ARN, or set HOSTED_ZONE_ID so the CertificateStack can request and DNS-validate one for you.'
+    );
+  }
+
+  if (hasAnyCustomDomain && !domain.hostedZoneId) {
+    errors.push(
+      'A custom domain is configured (API_DOMAIN and/or CDN_DOMAIN) but HOSTED_ZONE_ID is missing. A Route 53 hosted zone is required to create the DNS alias records for custom domains.'
+    );
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Invalid domain configuration for '${environmentName}' environment:\n  - ${errors.join('\n  - ')}\n` +
+        'Leave all of API_DOMAIN, CDN_DOMAIN, HOSTED_ZONE_ID, CERTIFICATE_ARN and CLOUDFRONT_CERTIFICATE_ARN unset to deploy with the default API Gateway and CloudFront URLs.'
+    );
+  }
+}
+
+/**
  * Get environment configuration based on environment name
  */
 export function getEnvironmentConfig(env: string): EnvironmentConfig {
+  let config: EnvironmentConfig;
+
   switch (env) {
     case 'dev':
-      return devConfig;
+      config = devConfig;
+      break;
     case 'staging':
-      return stagingConfig;
+      config = stagingConfig;
+      break;
     case 'production':
-      return productionConfig;
+      config = productionConfig;
+      break;
     default:
       throw new Error(`Unknown environment: ${env}. Must be one of: dev, staging, production`);
   }
+
+  validateDomainConfig(config.domain, config.environmentName);
+
+  return config;
 }
 
 /**
@@ -136,12 +219,7 @@ const devConfig: EnvironmentConfig = {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean),
-  domain: {
-    apiDomain: process.env.API_DOMAIN,
-    cdnDomain: process.env.CDN_DOMAIN,
-    hostedZoneId: process.env.HOSTED_ZONE_ID,
-    certificateArn: process.env.CERTIFICATE_ARN
-  },
+  domain: buildDomainConfig(),
   database: {
     connectionString: process.env.DATABASE_URL || '',
     maxConnections: 1,
@@ -198,12 +276,7 @@ const stagingConfig: EnvironmentConfig = {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean),
-  domain: {
-    apiDomain: process.env.API_DOMAIN,
-    cdnDomain: process.env.CDN_DOMAIN,
-    hostedZoneId: process.env.HOSTED_ZONE_ID,
-    certificateArn: process.env.CERTIFICATE_ARN
-  },
+  domain: buildDomainConfig(),
   database: {
     connectionString: process.env.DATABASE_URL || '',
     maxConnections: 1,
@@ -260,12 +333,7 @@ const productionConfig: EnvironmentConfig = {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean),
-  domain: {
-    apiDomain: process.env.API_DOMAIN,
-    cdnDomain: process.env.CDN_DOMAIN,
-    hostedZoneId: process.env.HOSTED_ZONE_ID,
-    certificateArn: process.env.CERTIFICATE_ARN
-  },
+  domain: buildDomainConfig(),
   database: {
     connectionString: process.env.DATABASE_URL || '',
     maxConnections: 1,

@@ -34,13 +34,45 @@ export CDK_DEFAULT_REGION=us-east-1
 # Database (Neon PostgreSQL)
 export DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
 
-# Domain Configuration (optional for initial deployment)
-export HOSTED_ZONE_ID=Z1234567890ABC
-export CERTIFICATE_ARN=arn:aws:acm:us-east-1:123456789012:certificate/abc123
+# Domain Configuration (OPTIONAL — see "Custom domains" below)
+# Leave all of these unset to deploy with the default API Gateway and
+# CloudFront URLs. No hosted zone or certificate is required in that case.
+# export API_DOMAIN=api.example.com
+# export CDN_DOMAIN=cdn.example.com
+# export HOSTED_ZONE_ID=Z1234567890ABC
+# export CERTIFICATE_ARN=arn:aws:acm:us-east-1:123456789012:certificate/abc123        # regional, API Gateway
+# export CLOUDFRONT_CERTIFICATE_ARN=arn:aws:acm:us-east-1:123456789012:certificate/def456  # us-east-1, CloudFront
 
 # Monitoring
-export ALARM_EMAIL=ops@classroomio.com
+export ALARM_EMAIL=ops@example.com
 ```
+
+### Custom domains (optional)
+
+Custom domains are fully optional. With none of the domain variables set, a
+deployment uses the default API Gateway (`*.execute-api.<region>.amazonaws.com`)
+and CloudFront (`*.cloudfront.net`) URLs, and the Certificate stack is not
+created.
+
+The relevant variables and the rules the CDK enforces at synth time:
+
+| Variable | Purpose | Required when |
+| --- | --- | --- |
+| `API_DOMAIN` | Custom domain for the API Gateway | optional |
+| `CDN_DOMAIN` | Custom domain for the CloudFront CDN | optional |
+| `HOSTED_ZONE_ID` | Route 53 hosted zone for DNS alias records | any custom domain is set |
+| `CERTIFICATE_ARN` | **Regional** ACM certificate (same region as the API Gateway) | `API_DOMAIN` is set |
+| `CLOUDFRONT_CERTIFICATE_ARN` | **us-east-1** ACM certificate for CloudFront | `CDN_DOMAIN` is set and no hosted zone is supplied to request one |
+
+CloudFront always requires its certificate in **us-east-1**, which is a
+different certificate from the regional one the API Gateway uses — hence the
+two separate variables. If you set `CDN_DOMAIN` and provide a `HOSTED_ZONE_ID`
+but no `CLOUDFRONT_CERTIFICATE_ARN`, the optional Certificate stack requests and
+DNS-validates a us-east-1 certificate for you.
+
+Incomplete combinations (for example `CDN_DOMAIN` without a certificate or
+hosted zone) fail fast at synth with a message naming the missing variable.
+Behavior is identical across `dev`, `staging`, and `production`.
 
 ## Available Commands
 

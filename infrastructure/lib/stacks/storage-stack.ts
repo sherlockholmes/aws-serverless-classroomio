@@ -6,7 +6,7 @@ import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
-import { EnvironmentConfig } from '../config/environment';
+import { EnvironmentConfig, getRootZoneName } from '../config/environment';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -125,27 +125,38 @@ export class StorageStack extends cdk.Stack {
      *
      * Creates a CloudFront distribution with:
      * - Origin Access Control (OAC) for private S3 access (automatic via withOriginAccessControl)
-     * - Custom domain: cdn.example.com
-     * - ACM certificate (us-east-1)
+     * - An optional custom domain + us-east-1 ACM certificate (only when
+     *   CDN_DOMAIN and its certificate are configured; otherwise the default
+     *   *.cloudfront.net URL is used)
      * - Standard logging enabled
      */
 
-    // Look up ACM certificate in us-east-1 for CloudFront
-    // Note: CloudFront requires certificates in us-east-1 regardless of distribution region
-    // Priority: 1) Passed via props, 2) Config cloudFrontCertificateArn, 3) undefined (no custom domain)
+    // Resolve the us-east-1 CloudFront certificate (CloudFront requires its
+    // certificate in us-east-1 regardless of the distribution region).
+    // Priority: 1) ARN passed via props (from env or the optional
+    // CertificateStack), 2) config.domain.cloudFrontCertificateArn,
+    // 3) undefined — no custom CDN domain, use the default *.cloudfront.net URL.
     const certificateArn = props?.certificateArn || config.domain.cloudFrontCertificateArn;
+    const cdnDomain = config.domain.cdnDomain;
 
-    const certificate = certificateArn
-      ? acm.Certificate.fromCertificateArn(this, 'CdnCertificate', certificateArn)
-      : undefined;
+    // A custom CDN domain is only attached when BOTH the domain and its
+    // us-east-1 certificate are configured.
+    const useCustomCdnDomain = Boolean(cdnDomain && certificateArn);
 
-    // Look up Route 53 hosted zone for DNS record
-    const hostedZone = config.domain.hostedZoneId
-      ? route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-          hostedZoneId: config.domain.hostedZoneId,
-          zoneName: (config.domain.cdnDomain ?? '').split('.').slice(-2).join('.') // Extract root domain
-        })
-      : undefined;
+    const certificate =
+      useCustomCdnDomain && certificateArn
+        ? acm.Certificate.fromCertificateArn(this, 'CdnCertificate', certificateArn)
+        : undefined;
+
+    // Look up the Route 53 hosted zone only when a custom CDN domain and a
+    // hosted zone are both configured — the alias record requires it.
+    const hostedZone =
+      useCustomCdnDomain && cdnDomain && config.domain.hostedZoneId
+        ? route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+            hostedZoneId: config.domain.hostedZoneId,
+            zoneName: getRootZoneName(cdnDomain)
+          })
+        : undefined;
 
     /**
      * Task 18.2: Configure Cache Behaviors for Video Content
@@ -312,9 +323,11 @@ export class StorageStack extends cdk.Stack {
     this.distribution = new cloudfront.Distribution(this, 'CdnDistribution', {
       comment: `ClassroomIO CDN - ${config.environmentName}`,
 
-      // Custom domain configuration
-      // TEMPORARILY DISABLED:       domainNames: certificate ? [config.domain.cdnDomain] : undefined,
-      // TEMPORARILY DISABLED:       certificate: certificate,
+      // Custom domain configuration — only attached when a custom CDN domain
+      // and its us-east-1 certificate are configured; otherwise CloudFront
+      // serves the default *.cloudfront.net URL.
+      domainNames: useCustomCdnDomain && cdnDomain ? [cdnDomain] : undefined,
+      certificate: certificate,
 
       // Default behavior (catch-all)
       defaultBehavior: {
@@ -425,18 +438,18 @@ export class StorageStack extends cdk.Stack {
      */
 
     /**
-     * Create Route 53 DNS record for custom domain
+     * Create the Route 53 DNS alias record for the custom CDN domain.
+     * Only created when the custom domain, its certificate, and a hosted zone
+     * are all configured.
      */
-    // TEMPORARILY DISABLED:     if (hostedZone && certificate) {
-    // TEMPORARILY DISABLED:       new route53.ARecord(this, 'CdnAliasRecord', {
-    // TEMPORARILY DISABLED:         zone: hostedZone,
-    // TEMPORARILY DISABLED:         recordName: config.domain.cdnDomain,
-    // TEMPORARILY DISABLED:         target: route53.RecordTarget.fromAlias(
-    // TEMPORARILY DISABLED:           new targets.CloudFrontTarget(this.distribution)
-    // TEMPORARILY DISABLED:         ),
-    // TEMPORARILY DISABLED:         comment: `CloudFront distribution for ${config.environmentName} CDN`,
-    // TEMPORARILY DISABLED:       });
-    // TEMPORARILY DISABLED:     }
+    if (hostedZone && certificate && cdnDomain) {
+      new route53.ARecord(this, 'CdnAliasRecord', {
+        zone: hostedZone,
+        recordName: cdnDomain,
+        target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
+        comment: `CloudFront distribution for ${config.environmentName} CDN`
+      });
+    }
 
     // Stack Outputs
 
@@ -487,13 +500,17 @@ export class StorageStack extends cdk.Stack {
       exportName: `${config.environmentName}-DistributionDomainName`
     });
 
+    // CDN base URL: the custom domain when configured, otherwise the default
+    // CloudFront distribution domain (*.cloudfront.net).
+    const cdnHost = useCustomCdnDomain && cdnDomain ? cdnDomain : this.distribution.distributionDomainName;
+
     new cdk.CfnOutput(this, 'CdnDomain', {
-      value: config.domain.cdnDomain ?? '',
-      description: 'Custom CDN domain (cdn.example.com)'
+      value: cdnHost,
+      description: 'CDN host (custom domain when configured, else CloudFront default domain)'
     });
 
     new cdk.CfnOutput(this, 'CdnUrl', {
-      value: `https://${config.domain.cdnDomain ?? ''}`,
+      value: `https://${cdnHost}`,
       description: 'CDN base URL for accessing media'
     });
 
