@@ -23,6 +23,12 @@ is a deployment that any team can stand up in **their own AWS account** with
 minimal configuration — no account-specific values are committed to this
 repository.
 
+> **Built with Amazon Kiro.** The architecture migration — porting the Hono
+> route groups to individual Lambda handlers, authoring the AWS CDK stacks, and
+> validating route parity against the upstream API — was carried out primarily
+> with [Amazon Kiro](https://kiro.dev), AWS's agentic IDE, using its
+> spec-driven workflow to plan and track the migration.
+
 ## What problem it solves
 
 - **No server to operate** — pay-per-request Lambda instead of an always-on host.

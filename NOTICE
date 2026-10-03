@@ -42,5 +42,8 @@ Summary of modifications in this variant
   - Configuration generalized so the stack can be deployed to any AWS
     account via environment variables (no account-specific values committed).
 
+The architecture migration was carried out primarily with Amazon Kiro
+(https://kiro.dev), AWS's agentic IDE, using its spec-driven workflow.
+
 All AWS account identifiers, domain names, and credentials have been removed
 from this public distribution and replaced with generic placeholders.
