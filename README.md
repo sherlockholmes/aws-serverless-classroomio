@@ -43,7 +43,7 @@ logic, database schema) and changes **how and where the backend runs**.
 | Scaling | Vertical / always-on | Serverless, on-demand |
 | Transactional email | Provider-dependent | Amazon SQS → worker Lambda → Amazon SES |
 | Background jobs | Redis/BullMQ worker | SQS-backed Lambda workers |
-| Database | PostgreSQL | PostgreSQL (Neon or any managed Postgres) |
+| Database | PostgreSQL | PostgreSQL — Neon recommended (serverless, pay-per-use) |
 | Config | `.env` files | `.env` + CDK context / environment variables |
 
 ### Trade-offs introduced
@@ -97,7 +97,7 @@ Lambda handlers live under [`infrastructure/src/lambda/`](infrastructure/src/lam
 | AWS CDK v2 | `npm i -g aws-cdk`; the account/region must be **bootstrapped** (`cdk bootstrap`) |
 | Node.js >= 20.19.3 | See `.nvmrc` |
 | pnpm v10 | Package scripts call `pnpm` directly |
-| PostgreSQL database | [Neon](https://neon.tech) or any managed Postgres reachable from Lambda |
+| PostgreSQL database | **[Neon](https://neon.tech) recommended** (serverless, scale-to-zero, pay-per-use — a natural fit for this serverless stack). Any managed Postgres reachable from Lambda also works. |
 | (Local dev only) Docker | Runs Postgres + Redis locally |
 
 ## Environment variables
@@ -192,7 +192,8 @@ Monorepo layout:
 - **Not every upstream route** is deployed as a native Lambda yet. The serverless
   surface covers the core LMS flows; some advanced/low-traffic route groups remain
   to be ported. The deployment returns a clean 404 for unported routes rather than
-  misbehaving.
+  misbehaving. See [`docs/endpoints.md`](docs/endpoints.md) for the full,
+  grouped list of migrated, pending, and out-of-scope endpoints.
 - **AI features are opt-in** and require provider API keys (OpenAI / Google / Anthropic).
 
 ## Cost considerations
@@ -203,7 +204,10 @@ serverless model is pay-per-request:
 - **API Gateway + Lambda** — charged per request and per GB-second; low idle cost.
 - **SQS + SES** — per message / per email.
 - **CloudFront + S3** — per GB transferred / stored.
-- **PostgreSQL (Neon or RDS)** — billed by your database provider, separately from AWS compute.
+- **PostgreSQL** — billed by your database provider, separately from AWS compute.
+  We recommend **[Neon](https://neon.tech)**: its serverless, scale-to-zero,
+  pay-per-use model aligns with this stack's goal of paying only for what you
+  use (no always-on database instance to fund during idle periods).
 
 Estimate against the [AWS Pricing Calculator](https://calculator.aws/) for your
 expected traffic. No cost figures from any specific deployment are included here.
