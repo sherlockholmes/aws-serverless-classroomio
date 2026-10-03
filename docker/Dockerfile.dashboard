@@ -1,0 +1,36 @@
+FROM node:20.19.3-slim
+
+WORKDIR /app
+
+ENV CI=true
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+ARG PUBLIC_IS_SELFHOSTED=true
+
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
+
+# Fetch deps from the lockfile first (cached unless pnpm-lock.yaml changes); the
+# store is baked into this layer and reused by the offline install below.
+COPY pnpm-lock.yaml ./
+RUN pnpm fetch --store-dir /pnpm/store
+
+COPY . .
+
+RUN pnpm install --offline --frozen-lockfile --ignore-scripts \
+    --store-dir /pnpm/store --filter @cio/dashboard...
+RUN find . -name 'tsconfig.tsbuildinfo' -delete
+RUN NODE_OPTIONS="--max-old-space-size=8072" \
+    PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED}" \
+    pnpm -r --filter @cio/dashboard... build
+
+RUN test -f apps/dashboard/build/index.js || (echo "ERROR: Dashboard build output not found at apps/dashboard/build/index.js" && exit 1)
+
+EXPOSE 3000
+
+ENV NODE_ENV=production \
+    PORT=3000 \
+    PUBLIC_IS_SELFHOSTED=true
+
+WORKDIR /app/apps/dashboard
+CMD ["node", "build/index.js"]

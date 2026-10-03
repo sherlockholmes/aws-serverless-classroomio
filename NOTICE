@@ -1,0 +1,46 @@
+ClassroomIO — AWS Serverless Variant
+=====================================
+
+This project is an UNOFFICIAL derivative work based on ClassroomIO
+(https://github.com/classroomio/classroomio), adapted to run on an AWS
+serverless architecture (Amazon API Gateway + AWS Lambda, provisioned with
+the AWS CDK).
+
+It is NOT affiliated with, endorsed by, or supported by the ClassroomIO
+project or its maintainers.
+
+--------------------------------------------------------------------------
+Upstream project
+--------------------------------------------------------------------------
+Name:     ClassroomIO
+Source:   https://github.com/classroomio/classroomio
+Website:  https://classroomio.com
+License:  GNU Affero General Public License v3.0 (AGPL-3.0)
+
+--------------------------------------------------------------------------
+License of this derivative work
+--------------------------------------------------------------------------
+This derivative work is distributed under the same license as the upstream
+project: the GNU Affero General Public License v3.0 (AGPL-3.0). See the
+LICENSE file for the full text.
+
+In accordance with the AGPL-3.0:
+  - The original ClassroomIO source remains under AGPL-3.0.
+  - Modifications made for this variant are also licensed under AGPL-3.0.
+  - If you run a modified version of this software to provide a service over
+    a network, you must make the corresponding source code available to the
+    users of that service.
+
+--------------------------------------------------------------------------
+Summary of modifications in this variant
+--------------------------------------------------------------------------
+  - Backend route groups reimplemented as individual AWS Lambda handlers
+    behind an Amazon API Gateway HTTP API (see infrastructure/src/lambda/).
+  - Infrastructure described as code using the AWS CDK
+    (see infrastructure/lib/).
+  - Transactional email delivery routed through Amazon SQS + Amazon SES.
+  - Configuration generalized so the stack can be deployed to any AWS
+    account via environment variables (no account-specific values committed).
+
+All AWS account identifiers, domain names, and credentials have been removed
+from this public distribution and replaced with generic placeholders.

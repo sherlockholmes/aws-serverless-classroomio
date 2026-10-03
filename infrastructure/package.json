@@ -1,0 +1,54 @@
+{
+  "name": "@cio/infrastructure",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for ClassroomIO serverless migration",
+  "main": "dist/bin/app.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "synth": "cdk synth --context env=dev",
+    "synth:staging": "cdk synth --context env=staging",
+    "synth:production": "cdk synth --context env=production",
+    "deploy:dev": "cdk deploy --context env=dev --all",
+    "deploy:staging": "cdk deploy --context env=staging --all --require-approval never",
+    "deploy:production": "cdk deploy --context env=production --all --require-approval always",
+    "diff:dev": "cdk diff --context env=dev",
+    "diff:staging": "cdk diff --context env=staging",
+    "diff:production": "cdk diff --context env=production",
+    "destroy:dev": "cdk destroy --context env=dev --all",
+    "list": "cdk list --context env=dev"
+  },
+  "keywords": [
+    "aws",
+    "cdk",
+    "infrastructure",
+    "serverless",
+    "lambda"
+  ],
+  "author": "ClassroomIO",
+  "license": "MIT",
+  "packageManager": "pnpm@10.19.0",
+  "dependencies": {
+    "aws-cdk": "^2.1139.0",
+    "aws-cdk-lib": "^2.266.0",
+    "constructs": "^10.8.1",
+    "source-map-support": "^0.5.21",
+    "@cio/core": "workspace:*",
+    "@cio/db": "workspace:*",
+    "@cio/utils": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "tldts": "^6.1.86",
+    "@cio/email": "workspace:*",
+    "@cio/jobs": "workspace:*",
+    "@cio/question-types": "workspace:*",
+    "@cio/certificates": "workspace:*",
+    "katex": "^0.16.10",
+    "marked": "^7.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

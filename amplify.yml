@@ -1,0 +1,49 @@
+version: 1
+applications:
+  - appRoot: apps/dashboard
+    frontend:
+      buildPath: / # install + build run from the pnpm/turbo monorepo root
+      phases:
+        preBuild:
+          commands:
+            # Resolves the exact pnpm version pinned in root package.json's
+            # "packageManager" field. Do NOT set node-linker=hoisted here —
+            # the root .npmrc pins node-linker=isolated on purpose (hoisted
+            # breaks @sveltejs/acorn-typescript parsing of <script lang="ts">).
+            - corepack enable
+            # Pin the pnpm content-addressable store to a path inside the
+            # workspace so Amplify's build cache (cache.paths below) can
+            # reuse it across builds. The store is deduplicated across all
+            # workspace packages (~3.5GB locally) and is what actually makes
+            # `pnpm install` fast on a cache hit — caching node_modules/**/*
+            # instead does NOT speed up install and previously produced a
+            # >5GB cache artifact that silently failed to upload every build.
+            - pnpm install --frozen-lockfile --config.store-dir=.pnpm-store
+        build:
+          commands:
+            # CI_ENVIRONMENT=amplify switches apps/dashboard/svelte.config.js
+            # to amplify-adapter (SSR on Amplify Compute) instead of adapter-node.
+            # turbo --filter=@cio/dashboard resolves and builds every workspace
+            # dependency first (@cio/db, @cio/api, @cio/ui, @cio/analytics, etc.)
+            # and turbo's own cache (.turbo/**/*, cached below) skips
+            # unchanged packages entirely on a cache hit.
+            # NODE_OPTIONS raises V8's old-space limit per process — the
+            # default (~2GB) OOMs while Vite/Rollup bundles this monorepo's
+            # SvelteKit SSR server output. turbo runs multiple workspace
+            # package builds concurrently (LARGE_16GB = 8 vCPUs), and each
+            # inherits NODE_OPTIONS, so the real ceiling is
+            # (heap-per-process * concurrency) vs the container's 16GB RAM —
+            # not a single process's heap limit. --concurrency=2 keeps at
+            # most 2 Node processes running build steps at once; 6GB each
+            # leaves headroom for the OS/other tooling on a 16GB instance.
+            - export NODE_OPTIONS=--max-old-space-size=6144
+            - CI_ENVIRONMENT=amplify pnpm exec turbo run build --filter=@cio/dashboard --concurrency=2
+      artifacts:
+        baseDirectory: apps/dashboard/build
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - .pnpm-store/**/*
+          - .turbo/**/*
+          - '**/.turbo/**/*'

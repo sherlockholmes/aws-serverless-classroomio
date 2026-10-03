@@ -1,0 +1,399 @@
+name: AWS Serverless Deploy
+
+# Automated deployment pipeline for ClassroomIO AWS Serverless Migration
+# Deploys Lambda functions, API Gateway, and supporting infrastructure using AWS CDK
+#
+# Environments:
+#   - dev: Automatically deployed from develop branch
+#   - staging: Automatically deployed from main branch after tests
+#   - production: Manually triggered with approval gate
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - 'infrastructure/**'
+      - 'apps/api/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/aws-serverless-deploy.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'infrastructure/**'
+      - 'apps/api/**'
+      - 'packages/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        default: staging
+        options:
+          - dev
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip test execution (not recommended for production)'
+        required: false
+        type: boolean
+        default: false
+
+# One deployment per environment at a time
+concurrency:
+  group: aws-deploy-${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'staging' || 'dev') }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC authentication with AWS
+
+env:
+  NODE_VERSION: '20'
+  AWS_REGION: us-east-1
+
+jobs:
+  # ===================================================================
+  # Test Job - Run unit tests before deployment
+  # ===================================================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests
+        run: pnpm test:unit
+        continue-on-error: false
+
+      - name: Run linter
+        run: pnpm lint
+        continue-on-error: false
+
+  # ===================================================================
+  # Build Job - Build Lambda function bundles and CDK
+  # ===================================================================
+  build:
+    name: Build Lambda Functions
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ always() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace dependencies
+        run: pnpm build
+
+      - name: Build infrastructure (CDK)
+        working-directory: infrastructure
+        run: pnpm build
+
+      - name: Create Lambda dist directory
+        run: mkdir -p dist/lambda
+
+      - name: Package Lambda functions
+        run: |
+          echo "Lambda functions will be packaged by CDK during synthesis"
+          echo "Dist directory prepared at: dist/lambda"
+
+      - name: Upload Lambda artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-dist
+          path: |
+            dist/
+            infrastructure/dist/
+            infrastructure/cdk.json
+            infrastructure/package.json
+          retention-days: 7
+
+  # ===================================================================
+  # Deploy to Dev - Automatic from develop branch
+  # ===================================================================
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      github.ref == 'refs/heads/develop' && 
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev'))
+    environment:
+      name: development
+      url: https://api-dev.classroomio.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Download Lambda artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-dist
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run database migrations
+        run: pnpm --filter @cio/db db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+
+      - name: Deploy CDK stack to dev
+        working-directory: infrastructure
+        run: pnpm deploy:dev
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Output deployment summary
+        run: |
+          echo "### Development Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: \`development\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- API Endpoint: https://api-dev.classroomio.com" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Lambda functions deployed successfully." >> $GITHUB_STEP_SUMMARY
+
+  # ===================================================================
+  # Deploy to Staging - Automatic from main branch after tests pass
+  # ===================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      github.ref == 'refs/heads/main' && 
+      (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging'))
+    environment:
+      name: staging
+      url: https://api-staging.classroomio.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Download Lambda artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-dist
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_STAGING }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run database migrations
+        run: pnpm --filter @cio/db db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Deploy CDK stack to staging
+        working-directory: infrastructure
+        run: pnpm deploy:staging
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Run integration tests
+        run: pnpm test:integration
+        env:
+          API_BASE_URL: https://api-staging.classroomio.com
+          TEST_API_KEY: ${{ secrets.STAGING_TEST_API_KEY }}
+
+      - name: Run E2E tests
+        run: |
+          npx playwright install --with-deps
+          pnpm test:e2e
+        env:
+          BASE_URL: https://app-staging.classroomio.com
+          E2E_TEST_EMAIL: ${{ secrets.STAGING_E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.STAGING_E2E_TEST_PASSWORD }}
+
+      - name: Output deployment summary
+        run: |
+          echo "### Staging Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: \`staging\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- API Endpoint: https://api-staging.classroomio.com" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Post-Deployment Tests:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Integration tests: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- E2E tests: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+
+  # ===================================================================
+  # Deploy to Production - Manual trigger with approval
+  # ===================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      github.event_name == 'workflow_dispatch' && 
+      inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://api.classroomio.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Download Lambda artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-dist
+          path: .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_PRODUCTION }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run database migrations
+        run: pnpm --filter @cio/db db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Deploy CDK stack to production
+        working-directory: infrastructure
+        run: pnpm deploy:production
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Run smoke tests
+        run: pnpm test:smoke
+        env:
+          API_BASE_URL: https://api.classroomio.com
+          SMOKE_TEST_API_KEY: ${{ secrets.PRODUCTION_SMOKE_TEST_API_KEY }}
+
+      - name: Output deployment summary
+        run: |
+          echo "### Production Deployment Complete :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Environment: \`production\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- API Endpoint: https://api.classroomio.com" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Post-Deployment Validation:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Smoke tests: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> :warning: Monitor CloudWatch metrics for 15 minutes before marking deployment complete." >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify deployment success
+        run: |
+          echo "::notice title=Production Deployment::Production deployment completed successfully. Monitor CloudWatch for the next 15 minutes."
+
+  # ===================================================================
+  # Post-Deployment Monitoring - Run for staging and production only
+  # ===================================================================
+  post-deployment-check:
+    name: Post-Deployment Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: ${{ always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success') }}
+    steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            echo "name=production" >> $GITHUB_OUTPUT
+            echo "url=https://api.classroomio.com" >> $GITHUB_OUTPUT
+          else
+            echo "name=staging" >> $GITHUB_OUTPUT
+            echo "url=https://api-staging.classroomio.com" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Health check endpoint
+        run: |
+          echo "Checking health endpoint: ${{ steps.env.outputs.url }}/health"
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ steps.env.outputs.url }}/health)
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Health check passed (HTTP $response)"
+          else
+            echo "::error::Health check failed (HTTP $response)"
+            exit 1
+          fi
+
+      - name: CloudWatch metrics check
+        if: steps.env.outputs.name == 'production'
+        run: |
+          echo "::warning::Remember to check CloudWatch metrics:"
+          echo "- Lambda error rate < 1%"
+          echo "- P95 latency < 1 second"
+          echo "- No throttling errors"
+          echo "- SQS job processing successful"

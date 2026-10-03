@@ -1,0 +1,16 @@
+{
+  "name": "course-listing-lambda",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.3",
+    "ws": "^8.18.0",
+    "@aws-sdk/client-cloudwatch": "^3.709.0",
+    "drizzle-orm": "^0.38.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/ws": "^8.5.13"
+  }
+}

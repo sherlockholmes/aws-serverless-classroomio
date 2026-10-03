@@ -1,0 +1,32 @@
+FROM node:20.19.3-slim
+
+WORKDIR /app
+
+# Keep install non-interactive and deterministic in CI/container contexts.
+ENV CI=true
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
+
+# Fetch deps from the lockfile first (cached unless pnpm-lock.yaml changes); the
+# store is baked into this layer and reused by the offline install below.
+COPY pnpm-lock.yaml ./
+RUN pnpm fetch --store-dir /pnpm/store
+
+COPY . .
+
+RUN pnpm install --offline --frozen-lockfile --ignore-scripts --shamefully-hoist \
+    --store-dir /pnpm/store --filter @cio/api...
+RUN find . -name 'tsconfig.tsbuildinfo' -delete
+RUN pnpm -r --filter @cio/api... build
+
+COPY docker/entrypoint-api.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+EXPOSE 3081
+
+ENV NODE_ENV=production \
+    PORT=3081
+
+ENTRYPOINT ["/app/entrypoint.sh"]

@@ -1,0 +1,20 @@
+{
+  "name": "video-url-generator",
+  "version": "1.0.0",
+  "description": "Lambda function for CloudFront signed HLS video URL generation",
+  "main": "index.ts",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.709.0",
+    "@aws-sdk/cloudfront-signer": "^3.716.0",
+    "@neondatabase/serverless": "^0.10.3",
+    "drizzle-orm": "^0.38.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^26.4.0",
+    "@types/ws": "^8.5.13"
+  }
+}

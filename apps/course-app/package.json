@@ -1,0 +1,49 @@
+{
+  "name": "@cio/course-app",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "format": "echo 'disabled'",
+    "format:run": "prettier --write .",
+    "lint": "prettier --check .",
+    "test:unit": "vitest",
+    "test": "npm run test:unit -- --run"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^3.0.0",
+    "@sveltejs/kit": "^2.9.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "bits-ui": "^2.16.1",
+    "clsx": "^2.1.1",
+    "postcss": "^8.5.6",
+    "prettier": "^3.3.2",
+    "prettier-plugin-svelte": "^3.2.6",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "svelte": "^5.46.1",
+    "svelte-check": "^4.0.0",
+    "svelte-sonner": "^0.3.28",
+    "tailwind-merge": "^2.5.5",
+    "tailwind-variants": "^0.3.0",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.0.0",
+    "vite": "^6.0.0",
+    "vitest": "^2.0.4"
+  },
+  "dependencies": {
+    "@cio/ui": "workspace:*",
+    "@lucide/svelte": "^0.562.0",
+    "lucide-svelte": "^0.468.0",
+    "mode-watcher": "^1.1.0",
+    "posthog-js": "^1.180.1",
+    "svelte-inview": "^4.0.4",
+    "svelte-motion": "^0.12.2",
+    "svelte-radix": "^2.0.1"
+  }
+}

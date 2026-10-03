@@ -1,0 +1,160 @@
+/**
+ * Key generation utilities for rate limiting
+ * These functions help create consistent and secure rate limit keys
+ */
+
+import { getConnInfo } from '@hono/node-server/conninfo';
+import type { Context } from 'hono';
+
+function normalizeIp(value: string | null | undefined): string | null {
+  const ip = value?.trim();
+
+  if (!ip) return null;
+
+  return ip.startsWith('::ffff:') ? ip.slice('::ffff:'.length) : ip;
+}
+
+/**
+ * Extract real client IP address considering various proxy headers
+ */
+export const extractClientIp = (c: Context): string => {
+  // Priority order (most trusted first):
+  // 1. CF-Connecting-IP (Cloudflare)
+  // 2. X-Real-IP (nginx)
+  // 3. X-Forwarded-For (standard, but can be spoofed)
+  // 4. Connection IP (least reliable)
+
+  const cfConnectingIp = normalizeIp(c.req.header('cf-connecting-ip'));
+  const realIp = normalizeIp(c.req.header('x-real-ip'));
+  const forwardedFor = c.req.header('x-forwarded-for');
+  const connInfo = getConnInfo(c);
+  const remoteAddress = normalizeIp(connInfo.remote.address);
+
+  if (cfConnectingIp) {
+    return cfConnectingIp;
+  }
+
+  if (realIp) {
+    return realIp;
+  }
+
+  if (forwardedFor) {
+    // x-forwarded-for can contain multiple IPs: "client, proxy1, proxy2"
+    // The first IP is usually the original client
+    return normalizeIp(forwardedFor.split(',')[0]) ?? 'unknown';
+  }
+
+  if (remoteAddress) {
+    return remoteAddress;
+  }
+
+  // Fallback - this might be a proxy IP
+  return 'unknown';
+};
+
+/**
+ * Generate rate limit key for authenticated users
+ */
+export const userKeyGenerator = (c: Context): string => {
+  const user = c.get('user'); // Already extracted by global middleware
+
+  if (user?.id) {
+    return `user:${user.id}`;
+  }
+
+  // No valid auth, fall back to IP
+  return `ip:${extractClientIp(c)}`;
+};
+
+/**
+ * Generate rate limit key for API keys
+ */
+export const apiKeyGenerator = (c: Context): string => {
+  const apiKey = c.req.header('X-API-Key');
+
+  if (apiKey) {
+    return `api:${apiKey}`;
+  }
+
+  // Fallback to IP if no API key
+  return `ip:${extractClientIp(c)}`;
+};
+
+export const publicApiKeyGenerator = (c: Context): string => {
+  const automationKey = c.get('automationKey') as { id: string } | undefined;
+
+  if (automationKey?.id) {
+    return `automation_key:${automationKey.id}`;
+  }
+
+  return `ip:${extractClientIp(c)}`;
+};
+
+export const publicApiFailedAuthKeyGenerator = (c: Context): string => {
+  return `public_api_failed_auth:${extractClientIp(c)}`;
+};
+
+/**
+ * Generate rate limit key based on IP only
+ */
+export const ipKeyGenerator = (c: Context): string => {
+  return `ip:${extractClientIp(c)}`;
+};
+
+/**
+ * Generate rate limit key for specific endpoints
+ */
+export const endpointKeyGenerator =
+  (endpoint: string) =>
+  (c: Context): string => {
+    const baseKey = userKeyGenerator(c);
+    return `${baseKey}:${endpoint}`;
+  };
+
+// ─── Agent Document Keys ─────────────────────────────────────────────────────
+
+/**
+ * Redis key for storing extracted document text from AI assistant uploads.
+ * TTL: 3600 seconds (1 hour).
+ */
+export const agentDocumentKey = (documentId: string): string => {
+  return `agent:document:${documentId}`;
+};
+
+/**
+ * Rate limit key for agent chat endpoint (per-user).
+ */
+export const agentChatKeyGenerator = (c: Context): string => {
+  const baseKey = userKeyGenerator(c);
+  return `${baseKey}:agent:chat`;
+};
+
+// ─── Dashboard / analytics cache ─────────────────────────────────────────────
+
+/**
+ * Redis key for `getStudentLoginActivity` (day-of-week chart per org and window).
+ * Value: JSON array `{ day, count }[]`. TTL: 24h.
+ */
+export function dashLoginActivityKey(orgId: string, days: number): string {
+  return `dash:login-activity:${orgId}:${days}`;
+}
+
+/**
+ * Rate limit key for agent upload endpoint (per-user).
+ */
+export const agentUploadKeyGenerator = (c: Context): string => {
+  const baseKey = userKeyGenerator(c);
+  return `${baseKey}:agent:upload`;
+};
+
+/**
+ * Redis keys for engagement analytics read endpoints (landing-stats, funnel,
+ * country breakdown, time-to-enrollment). Value: JSON.
+ */
+export function dashAnalyticsKey(route: string, orgId: string, days: number, extra?: string): string {
+  const suffix = extra ? `:${extra}` : '';
+  return `dash:analytics:${route}:${orgId}:${days}${suffix}`;
+}
+
+/** TTL for engagement analytics caches (10 min). */
+export const DASH_ANALYTICS_TTL_SECONDS = 600;

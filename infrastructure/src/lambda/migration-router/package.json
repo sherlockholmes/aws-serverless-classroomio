@@ -1,0 +1,15 @@
+{
+  "name": "migration-router",
+  "version": "1.0.0",
+  "description": "Migration router Lambda for strangler fig pattern",
+  "main": "index.ts",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.451.0",
+    "@aws-sdk/lib-dynamodb": "^3.451.0",
+    "@aws-sdk/client-lambda": "^3.451.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.131",
+    "@types/node": "^20.10.0"
+  }
+}

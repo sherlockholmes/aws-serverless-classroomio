@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # LocalStack - Local AWS cloud stack
+  # Task 5.1: Set up LocalStack for local AWS service testing
+  # Requirements: 19.1
+  # Design: Testing Strategy § Integration Tests
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: classroomio-localstack
+    ports:
+      - '4566:4566' # LocalStack Gateway
+      - '4510-4559:4510-4559' # External services port range
+    environment:
+      # Services to enable
+      - SERVICES=lambda,apigateway,dynamodb,s3,sqs,logs,events,iam,sts,kms,secretsmanager
+
+      # Debug settings
+      - DEBUG=1
+      - LS_LOG=info
+
+      # Persistence
+      - PERSISTENCE=1
+      - PERSIST_PATH=/var/lib/localstack
+
+      # Lambda settings
+      - LAMBDA_EXECUTOR=docker-reuse
+      - LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT=60
+      - LAMBDA_DOCKER_NETWORK=classroomio-localstack-network
+
+      # API Gateway settings
+      - GATEWAY_LISTEN=0.0.0.0:4566
+
+      # Hostname settings
+      - HOSTNAME=localhost
+      - HOSTNAME_EXTERNAL=localhost
+
+      # AWS configuration
+      - AWS_DEFAULT_REGION=us-east-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+
+      # Disable analytics
+      - DISABLE_EVENTS=1
+
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./localstack-init:/etc/localstack/init/ready.d
+    networks:
+      - localstack-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4566/_localstack/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # PostgreSQL - Local database for testing (mimics Neon)
+  postgres:
+    image: postgres:16-alpine
+    container_name: classroomio-postgres-local
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=neondb
+      - POSTGRES_USER=neondb_owner
+      - POSTGRES_PASSWORD=local_password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./localstack-init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - localstack-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U neondb_owner -d neondb']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - For local testing of rate limiting and caching
+  redis:
+    image: redis:7-alpine
+    container_name: classroomio-redis-local
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - localstack-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  localstack-data:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  localstack-network:
+    name: classroomio-localstack-network
+    driver: bridge

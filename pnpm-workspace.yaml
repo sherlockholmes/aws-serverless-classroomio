@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - '!apps/db-agent'
+  - packages/*
+  - packages/course-app/src/*
+  - infrastructure
+onlyBuiltDependencies:
+  - esbuild
+  - '@tailwindcss/oxide'
+# Block brand-new registry publishes for 24h (supply-chain cooldown).
+# Locked versions in pnpm-lock.yaml stay installable; this gates adds/updates.
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@getworkbench/hono'
+  - '@getworkbench/core'

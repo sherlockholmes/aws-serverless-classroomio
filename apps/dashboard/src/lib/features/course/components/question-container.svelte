@@ -1,0 +1,132 @@
+<script lang="ts">
+  import { InputField } from '@cio/ui/custom/input-field';
+  import TrashIcon from '@lucide/svelte/icons/trash';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { IconButton } from '@cio/ui/custom/icon-button';
+  import * as Tooltip from '@cio/ui/base/tooltip';
+  import { t } from '$lib/utils/functions/translations';
+
+  interface Props {
+    isTitle?: boolean;
+    onClose?: any;
+    scrollToQuestion?: boolean;
+    points?: any;
+    hasError?: boolean;
+    errorMsg?: string | null;
+    /** Hint shown next to the points input while points is 0 (e.g. auto-grade requires non-zero points) */
+    pointsHint?: string | null;
+    onPointsChange?: any;
+    elementId?: string;
+    key?: string;
+    children?: import('svelte').Snippet;
+  }
+
+  let {
+    isTitle = false,
+    onClose = () => {},
+    scrollToQuestion = false,
+    points = $bindable(undefined),
+    hasError = false,
+    errorMsg = null,
+    pointsHint = null,
+    onPointsChange = () => {},
+    elementId,
+    children
+  }: Props = $props();
+
+  let ref: HTMLDivElement | undefined = $state();
+
+  // `points` is often bound to a plain store object property, which is not deeply
+  // reactive — a local reactive owner keeps the zero-points warning live while typing.
+  let pointsValue = $state(points);
+
+  $effect(() => {
+    if (ref && scrollToQuestion) {
+      ref.scrollIntoView({
+        block: 'start',
+        behavior: 'smooth',
+        inline: 'nearest'
+      });
+    }
+  });
+</script>
+
+<div
+  id={elementId}
+  bind:this={ref}
+  class="border-border border bg-white dark:bg-black {hasError ? 'border-red-700' : ''} root relative mb-6 rounded-md"
+>
+  {#if isTitle}
+    <div class="title bg-primary-700 absolute"></div>
+  {/if}
+  <div class="px-4 {isTitle ? 'pt-4' : 'pt-2'} pb-3">
+    {@render children?.()}
+  </div>
+
+  {#if typeof points !== 'undefined'}
+    <div class="border-gray flex items-center justify-between border-t-2 border-r-0 border-b-0 border-l-0 p-2">
+      <div class="flex w-40 items-center">
+        <p class="mr-2 text-sm dark:text-white">
+          {$t('course.navItem.lessons.exercises.new_exercise_modal.points')}:
+        </p>
+        <InputField
+          placeholder={$t('course.navItem.lessons.exercises.new_exercise_modal.points')}
+          bind:value={
+            () => pointsValue,
+            (nextValue) => {
+              const parsedValue = Number(nextValue);
+              const clampedValue =
+                nextValue === '' || nextValue == null || !Number.isFinite(parsedValue)
+                  ? nextValue // ← empty/invalid: preserve unchanged
+                  : Math.max(parsedValue, 1); // ← finite value: ALWAYS a number, min 1
+
+              pointsValue = clampedValue;
+              points = clampedValue;
+            }
+          }
+          type="number"
+          min={1}
+          step={1}
+          onchange={onPointsChange}
+        />
+
+        {#if Number(pointsValue) === 0}
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <Tooltip.Trigger class="ml-2 shrink-0">
+                <TriangleAlertIcon size={16} class="text-amber-500 dark:text-amber-400" />
+              </Tooltip.Trigger>
+              <Tooltip.Content side="top" sideOffset={4}>
+                {$t('course.navItem.lessons.exercises.all_exercises.zero_points_warning')}
+              </Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
+        {/if}
+      </div>
+
+      {#if errorMsg}
+        <p class="text-xs text-red-500">{errorMsg}</p>
+      {:else if pointsHint && Number(pointsValue) === 0}
+        <p class="ui:text-muted-foreground max-w-[min(100%,12rem)] text-xs">{pointsHint}</p>
+      {/if}
+
+      {#if onClose && !isTitle}
+        <IconButton onclick={onClose}>
+          <TrashIcon size={16} />
+        </IconButton>
+      {/if}
+    </div>
+  {/if}
+</div>
+
+<style>
+  .title {
+    color: rgba(255, 255, 255, 1);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    height: 10px;
+    left: -1px;
+    top: -1px;
+    width: calc(100% + 2px);
+  }
+</style>

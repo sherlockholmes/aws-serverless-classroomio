@@ -1,0 +1,11 @@
+{
+  "name": "hono-proxy",
+  "version": "1.0.0",
+  "description": "Hono proxy Lambda for strangler fig pattern",
+  "main": "index.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.131",
+    "@types/node": "^20.10.0"
+  }
+}

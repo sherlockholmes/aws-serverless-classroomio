@@ -1,0 +1,621 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. CDK Project Setup and Environment Configuration": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294167
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882312214
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787884399501
+      }
+    ],
+    "2.1 Create GitHub Actions workflow for automated testing and deployment": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294214
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787884404600
+      }
+    ],
+    "2.2 Configure AWS IAM roles for GitHub Actions deployment": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294245
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787884405043
+      }
+    ],
+    "3.1 Create S3 bucket for media storage": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294272
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787884405916
+      }
+    ],
+    "3.2 Create DynamoDB tables for ephemeral state": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294303
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787884406591
+      }
+    ],
+    "3.3 Set up CloudWatch log groups and dashboards": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294330
+      },
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787884407310
+      }
+    ],
+    "4.1 Test Neon connection pooling from Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294361
+      }
+    ],
+    "4.2 Implement connection retry logic for scale-to-zero": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294389
+      }
+    ],
+    "4.3 Validate Better Auth session storage in Neon": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294425
+      }
+    ],
+    "5.1 Set up LocalStack for local AWS service testing": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294464
+      }
+    ],
+    "5.2 Configure ESBuild bundler for Lambda functions": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294493
+      }
+    ],
+    "6. Checkpoint - Foundation Complete": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294524
+      }
+    ],
+    "7.1 Create API Gateway HTTP API with custom domain": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294556
+      }
+    ],
+    "7.2 Configure CORS and request validation": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294583
+      }
+    ],
+    "7.3 Set up usage plans and throttling": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294621
+      }
+    ],
+    "8.1 Implement login Lambda function": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294652
+      }
+    ],
+    "8.2 Implement session validation Lambda function": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294685
+      }
+    ],
+    "8.3 Implement logout Lambda function": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294714
+      }
+    ],
+    "9.1 Implement migration routing logic": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294749
+      }
+    ],
+    "9.2 Implement canary traffic splitting": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294788
+      }
+    ],
+    "10.1 Create Hono proxy Lambda function": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294828
+      }
+    ],
+    "11.1 Implement account profile Lambda function": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294870
+      }
+    ],
+    "12. Checkpoint - Authentication Complete": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294908
+      }
+    ],
+    "13.1 Implement course listing Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294949
+      }
+    ],
+    "13.2 Implement course details Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882294987
+      }
+    ],
+    "13.3 Implement course enrollment Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295026
+      }
+    ],
+    "14.1 Implement DynamoDB rate limiter": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295051
+      }
+    ],
+    "14.2 Configure Lambda reserved concurrency": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295081
+      }
+    ],
+    "15.1 Implement lesson listing Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295117
+      }
+    ],
+    "15.2 Implement lesson details Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295150
+      }
+    ],
+    "15.3 Implement lesson progress tracking Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295181
+      }
+    ],
+    "16.1 Create operational dashboard": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295213
+      }
+    ],
+    "16.2 Configure CloudWatch alarms": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295250
+      }
+    ],
+    "17. Checkpoint - Course Routes Migration": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295282
+      }
+    ],
+    "18.1 Create CloudFront distribution with S3 origin": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295315
+      }
+    ],
+    "18.2 Configure cache behaviors for video content": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295352
+      }
+    ],
+    "18.3 Set up CloudFront signed URLs": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295388
+      }
+    ],
+    "19.1 Configure S3 bucket policy for CloudFront OAC": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295416
+      }
+    ],
+    "19.2 Create S3 lifecycle policies": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295443
+      }
+    ],
+    "20.1 Implement video URL generation Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295469
+      }
+    ],
+    "21.1 Copy existing HLS content to S3": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295502
+      }
+    ],
+    "22.1 Update video player to fetch signed URLs": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295543
+      }
+    ],
+    "23. Checkpoint - Video Streaming Complete": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295575
+      }
+    ],
+    "24.1 Implement assignment listing Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295609
+      }
+    ],
+    "24.2 Implement assignment details Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295645
+      }
+    ],
+    "24.3 Implement assignment submission Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295671
+      }
+    ],
+    "25.1 Implement student dashboard Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295700
+      }
+    ],
+    "25.2 Implement instructor dashboard Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295726
+      }
+    ],
+    "26.1 Add indexes for common queries": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295754
+      }
+    ],
+    "26.2 Optimize N+1 query patterns": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295783
+      }
+    ],
+    "27. Checkpoint - Assignment & Dashboard Complete": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295822
+      }
+    ],
+    "28.1 Create SQS queues for background jobs": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295860
+      }
+    ],
+    "29.1 Implement video upload presigned URL Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295888
+      }
+    ],
+    "29.2 Implement S3 event trigger Lambda for MediaConvert job creation": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295916
+      }
+    ],
+    "29.3 Configure MediaConvert job templates for HLS output": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295942
+      }
+    ],
+    "29.4 Implement MediaConvert job completion webhook/EventBridge handler": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882295978
+      }
+    ],
+    "29.5 Test end-to-end video upload → transcode → playback flow": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296011
+      }
+    ],
+    "30.1 Add job metadata tracking for MediaConvert jobs": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296041
+      }
+    ],
+    "31.1 Implement email sending Lambda worker": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296071
+      }
+    ],
+    "32.1 Implement push notification Lambda worker": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296100
+      }
+    ],
+    "33.1 Implement cleanup scheduled Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296149
+      }
+    ],
+    "33.2 Create EventBridge schedule rules": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296180
+      }
+    ],
+    "34.1 Replace BullMQ enqueue with SQS SendMessage": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296207
+      }
+    ],
+    "34.2 Implement feature flag cutover for SQS migration": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296234
+      }
+    ],
+    "35.1 Set up DLQ alarms and dashboards": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296263
+      }
+    ],
+    "35.2 Create DLQ processor Lambda": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296291
+      }
+    ],
+    "36. BullMQ Migration Cutover": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296319
+      }
+    ],
+    "36.1 Stop BullMQ job enqueueing": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296355
+      }
+    ],
+    "36.2 Decommission Redis instance": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296384
+      }
+    ],
+    "37.1 Configure Artillery load test scenarios": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296415
+      }
+    ],
+    "37.2 Execute load tests against staging environment": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296446
+      }
+    ],
+    "37.3 Identify and resolve bottlenecks": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296473
+      }
+    ],
+    "38.1 Create integration test suite": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296502
+      }
+    ],
+    "38.2 Create E2E test suite with Playwright": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296534
+      }
+    ],
+    "39.1 Create architecture diagrams": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296564
+      }
+    ],
+    "39.2 Write deployment guide": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296591
+      }
+    ],
+    "39.3 Create operational runbooks": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296619
+      }
+    ],
+    "40.1 Document cost breakdown": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296650
+      }
+    ],
+    "40.2 Configure cost monitoring": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296678
+      }
+    ],
+    "41.1 Final pre-cutover checklist": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296708
+      }
+    ],
+    "41.2 Update migration router for production cutover": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296737
+      }
+    ],
+    "41.3 Decommission old infrastructure": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296766
+      }
+    ],
+    "42. Final Checkpoint - Phase 1 Complete": [
+      {
+        "executionId": "63ec5cac-3008-41ca-b396-8e9a8b1d6d58",
+        "chatSessionId": "sess_e5aae984-3d48-4acd-bb2d-5f39126b1620",
+        "timestamp": 1787882296797
+      }
+    ]
+  }
+}
